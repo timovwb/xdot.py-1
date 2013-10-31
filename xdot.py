@@ -306,7 +306,7 @@ class BezierShape(Shape):
     def draw(self, cr, highlight=False):
         x0, y0 = self.points[0]
         cr.move_to(x0, y0)
-        for i in xrange(1, len(self.points), 3):
+        for i in range(1, len(self.points), 3):
             x1, y1 = self.points[i]
             x2, y2 = self.points[i + 1]
             x3, y3 = self.points[i + 2]
@@ -340,7 +340,7 @@ class CompoundShape(Shape):
         return False
 
 
-class Url(object):
+class Url:
 
     def __init__(self, item, url, highlight=None):
         self.item = item
@@ -350,7 +350,7 @@ class Url(object):
         self.highlight = highlight
 
 
-class Jump(object):
+class Jump:
 
     def __init__(self, item, x, y, highlight=None):
         self.item = item
@@ -522,7 +522,7 @@ class XDotAttrParser:
         self.pen = Pen()
         self.shapes = []
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.pos < len(self.buf)
 
     def read_code(self):
@@ -833,7 +833,7 @@ class Lexer:
         self.col = 1
         self.filename = filename
 
-    def next(self):
+    def __next__(self):
         while True:
             # save state
             pos = self.pos
@@ -882,7 +882,7 @@ class Parser:
 
     def __init__(self, lexer):
         self.lexer = lexer
-        self.lookahead = self.lexer.next()
+        self.lookahead = next(self.lexer)
 
     def match(self, type):
         if self.lookahead.type != type:
@@ -898,7 +898,7 @@ class Parser:
 
     def consume(self):
         token = self.lookahead
-        self.lookahead = self.lexer.next()
+        self.lookahead = next(self.lexer)
         return token
 
 
@@ -1235,7 +1235,7 @@ class XDotParser(DotParser):
         return x, y
 
 
-class Animation(object):
+class Animation:
 
     step = 0.03 # seconds
 
@@ -1325,7 +1325,7 @@ class ZoomToAnimation(MoveToAnimation):
         MoveToAnimation.animate(self, t)
 
 
-class DragAction(object):
+class DragAction:
 
     def __init__(self, dot_widget):
         self.dot_widget = dot_widget
@@ -1515,8 +1515,6 @@ class DotWidget(Gtk.DrawingArea):
 
     def set_dotcode(self, dotcode, filename=None):
         self.openfilename = None
-        if isinstance(dotcode, unicode):
-            dotcode = dotcode.encode('utf8')
         xdotcode = self.run_filter(dotcode)
         if xdotcode is None:
             return False
@@ -1546,7 +1544,7 @@ class DotWidget(Gtk.DrawingArea):
     def reload(self):
         if self.openfilename is not None:
             try:
-                fp = file(self.openfilename, 'rt')
+                fp = open(self.openfilename, 'rt')
                 self.set_dotcode(fp.read(), self.openfilename)
                 fp.close()
             except IOError:
@@ -1787,7 +1785,7 @@ class DotWidget(Gtk.DrawingArea):
             if event.button == 1:
                 url = self.get_url(x, y)
                 if url is not None:
-                    self.emit('clicked', unicode(url.url), event)
+                    self.emit('clicked', str(url.url), event)
                 else:
                     jump = self.get_jump(x, y)
                     if jump is not None:
@@ -1993,7 +1991,7 @@ class DotWindow(Gtk.Window):
 
     def open_file(self, filename):
         try:
-            fp = file(filename, 'rt')
+            fp = open(filename, 'rt')
             self.set_dotcode(fp.read(), filename)
             fp.close()
         except IOError as ex:
